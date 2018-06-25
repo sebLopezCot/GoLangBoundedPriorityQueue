@@ -8,9 +8,9 @@ import (
 )
 
 func TestCapacity(t *testing.T) {
-  queue1 := BPQWithCapacity(10)
-  queue2 := BPQWithCapacity(20)
-  queue3 := BPQWithCapacity(100)
+  queue1 := BPQWithCapacity(10, MIN_QUEUE)
+  queue2 := BPQWithCapacity(20, MIN_QUEUE)
+  queue3 := BPQWithCapacity(100, MIN_QUEUE)
 
   if queue1.Capacity() != 10 {
     t.Error("Capacity set to 10, was not 10")
@@ -28,11 +28,11 @@ func TestCapacity(t *testing.T) {
 // Tests for empty pops
 
 func TestEmptyPopWithRingBuffer(t *testing.T) {
-  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize), t)
+  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
 }
 
 func TestEmptyPopWithBoundedHeap(t *testing.T) {
-  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize+1), t)
+  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
 }
 
 func testEmptyPopWithBPQ(queue BPQ, t *testing.T) {
@@ -50,11 +50,11 @@ func testEmptyPopWithBPQ(queue BPQ, t *testing.T) {
 // Test for simple push/pop
 
 func TestSimplePushPopWithRingBuffer(t *testing.T) {
-  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize), t)
+  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
 }
 
 func TestSimplePushPopWithBoundedHeap(t *testing.T) {
-  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
+  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
 }
 
 func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
@@ -79,11 +79,11 @@ func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
 // Test for push/pop/pop
 
 func TestPushDoublePopWithRingBuffer(t *testing.T) {
-  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize), t)
+  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
 }
 
 func TestPushDoublePopWithBoundedHeap(t *testing.T) {
-  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
+  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
 }
 
 func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
@@ -102,14 +102,16 @@ func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
 // Test for priority ordering
 
 func TestPriorityOrderingWithRingBuffer(t *testing.T) {
-  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize), t)
+  testMinPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
+  testMaxPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MAX_QUEUE), t)
 }
 
 func TestPriorityOrderingWithBoundedHeap(t *testing.T) {
-  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
+  testMinPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
+  testMaxPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MAX_QUEUE), t)
 }
 
-func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
+func testMinPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
   queue.Push(0, 50000000000)
   queue.Push(1, 10)
   queue.Push(2, 5)
@@ -128,11 +130,30 @@ func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
   }
 }
 
+func testMaxPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
+  queue.Push(0, 50000000000)
+  queue.Push(1, 10)
+  queue.Push(2, 5)
+  queue.Push(3, 100)
+  v1, _ := queue.Pop()
+  v2, _ := queue.Pop()
+  v3, _ := queue.Pop()
+  v4, _ := queue.Pop()
+
+  if (v1 == nil || v1.(int) != 0) ||
+    (v2 == nil || v2.(int) != 3) ||
+    (v3 == nil || v3.(int) != 1) ||
+    (v4 == nil || v4.(int) != 2) {
+    result := fmt.Sprintf("%v, %v, %v, %v\n", v1, v2, v3, v4)
+    t.Error("Unexpected priority ordering, got " + result)
+  }
+}
+
 // Test for over-fill
 // Overfill tests currently only test the ring buffer
 
 func TestOverFill(t *testing.T) {
-  queue := BPQWithCapacity(5)
+  queue := BPQWithCapacity(5, MIN_QUEUE)
 
   queue.Push(1, 10)
   queue.Push(2, 11)
@@ -200,12 +221,12 @@ func (es Entries) ContainsPriority(priority int64) bool {
 }
 
 func TestRandomInsertAndPopWithRingBuffer(t *testing.T) {
-  testRandomInsertAndPopWithQueue(BPQWithCapacity(maxRingBufferSize),
+  testRandomInsertAndPopWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE),
     maxRingBufferSize, t)
 }
 
 func TestRandomInsertAndPopWithBoundedHeap(t *testing.T) {
-  testRandomInsertAndPopWithQueue(BPQWithCapacity(100*maxRingBufferSize),
+  testRandomInsertAndPopWithQueue(BPQWithCapacity(100*maxRingBufferSize, MIN_QUEUE),
     100*maxRingBufferSize, t)
 }
 
@@ -250,11 +271,11 @@ func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
 //
 
 func BenchmarkBPQRingBuffer(b *testing.B) {
-  benchmarkBPQ(BPQWithCapacity(maxRingBufferSize), b)
+  benchmarkBPQ(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), b)
 }
 
 func BenchmarkBPQBoundedHeap(b *testing.B) {
-  benchmarkBPQ(BPQWithCapacity(100*maxRingBufferSize), b)
+  benchmarkBPQ(BPQWithCapacity(100*maxRingBufferSize, MIN_QUEUE), b)
 }
 
 func benchmarkBPQ(queue BPQ, b *testing.B) {

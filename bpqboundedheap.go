@@ -15,6 +15,7 @@ type bpqBoundedHeapImpl struct {
   entries              []entry
   nextSlot             int
   highestPriorityIndex int
+  compareFunc          func(int64, int64) bool
 }
 
 func (bpq bpqBoundedHeapImpl) String() string {
@@ -25,8 +26,20 @@ func (e entry) String() string {
   return fmt.Sprintf("{ Value %v, priority %v }", e.item, e.priority)
 }
 
-func makeBoundedHeap(capacity int) *bpqBoundedHeapImpl {
-  result := bpqBoundedHeapImpl{make([]entry, capacity), 0, 0}
+func makeBoundedHeap(capacity int, queueType QueueType) *bpqBoundedHeapImpl {
+
+  var fn func(int64, int64) bool
+  if queueType == MAX_QUEUE {
+    fn = func(a int64, b int64) bool {
+      return a > b
+    }
+  } else {
+    fn = func(a int64, b int64) bool {
+      return a < b
+    }
+  }
+
+  result := bpqBoundedHeapImpl{make([]entry, capacity), 0, 0, fn}
 
   for i := 0; i < capacity; i++ {
     result.entries[i] = entry{nil, 0, false}
@@ -42,7 +55,7 @@ func (bpq *bpqBoundedHeapImpl) Capacity() int {
 func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
   if bpq.Capacity() == bpq.nextSlot {
     // We're full!
-    if priority < bpq.entries[bpq.highestPriorityIndex].priority {
+    if bpq.compareFunc(priority, bpq.entries[bpq.highestPriorityIndex].priority) {
       // But we can knock the back entry off
       bpq.entries[bpq.highestPriorityIndex].item = item
       bpq.entries[bpq.highestPriorityIndex].priority = priority
@@ -56,7 +69,7 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
       highestPriority := int64(math.MinInt64)
       highestIndex := 0
       for i, v := range bpq.entries {
-        if v.priority >= highestPriority {
+        if bpq.compareFunc(highestPriority, v.priority) {
           highestIndex = i
           highestPriority = v.priority
         }
@@ -120,21 +133,21 @@ func (bpq *bpqBoundedHeapImpl) bubbleDownIndex(index int) int {
   lChild, rChild := childrenOfIndex(index)
 
   if lChild < bpq.nextSlot && rChild < bpq.nextSlot {
-    if bpq.entries[lChild].priority < bpq.entries[rChild].priority {
-      if bpq.entries[lChild].priority < bpq.entries[index].priority {
+    if bpq.compareFunc(bpq.entries[lChild].priority, bpq.entries[rChild].priority) {
+      if bpq.compareFunc(bpq.entries[lChild].priority, bpq.entries[index].priority) {
         bpq.swapIndices(lChild, index)
         return bpq.bubbleDownIndex(lChild)
       }
     } else {
-      if bpq.entries[rChild].priority < bpq.entries[index].priority {
+      if bpq.compareFunc(bpq.entries[rChild].priority, bpq.entries[index].priority) {
         bpq.swapIndices(rChild, index)
         return bpq.bubbleDownIndex(rChild)
       }
     }
-  } else if lChild < bpq.nextSlot && bpq.entries[lChild].priority < bpq.entries[index].priority {
+  } else if lChild < bpq.nextSlot && bpq.compareFunc(bpq.entries[lChild].priority, bpq.entries[index].priority) {
     bpq.swapIndices(lChild, index)
     return bpq.bubbleDownIndex(lChild)
-  } else if rChild < bpq.nextSlot && bpq.entries[rChild].priority < bpq.entries[index].priority {
+  } else if rChild < bpq.nextSlot && bpq.compareFunc(bpq.entries[rChild].priority, bpq.entries[index].priority) {
     bpq.swapIndices(rChild, index)
     return bpq.bubbleDownIndex(rChild)
   }

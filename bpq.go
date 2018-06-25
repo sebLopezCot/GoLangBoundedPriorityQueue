@@ -4,6 +4,22 @@ import (
   "errors"
 )
 
+type QueueType int
+
+const (
+  MIN_QUEUE QueueType = 1 + iota
+  MAX_QUEUE
+)
+
+var queueTypes = [...]string{
+  "MIN_QUEUE",
+  "MAX_QUEUE",
+}
+
+func (queueType QueueType) String() string {
+  return queueTypes[queueType-1]
+}
+
 // BPQ represents a bounded min-priority queue
 type BPQ interface {
   // Capacity returns the capacity (bounds) on the underlying queue
@@ -24,10 +40,10 @@ var NoElementsError error = errors.New("NoElementsError")
 const maxRingBufferSize = 128
 
 // BPQWithCapacity creates a new bounded priority queue with the given capacity
-func BPQWithCapacity(capacity int) BPQ {
+func BPQWithCapacity(capacity int, queueType QueueType) BPQ {
   if capacity <= maxRingBufferSize {
-    return makeRingBuffer(capacity)
+    return makeRingBuffer(capacity, queueType)
   } else {
-    return makeBoundedHeap(capacity)
+    return makeBoundedHeap(capacity, queueType)
   }
 }

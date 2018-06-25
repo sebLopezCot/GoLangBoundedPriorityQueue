@@ -13,6 +13,7 @@ type ringBufferEntry struct {
 type bpqRingBuffer struct {
   entries              []ringBufferEntry
   startIndex, endIndex int
+  compareFunc          func(int64, int64) bool
 }
 
 func (e ringBufferEntry) String() string {
@@ -27,9 +28,20 @@ func (bpq bpqRingBuffer) String() string {
   return fmt.Sprintf("BPQ Ring Buffer: Start %v, End %v, Entries: %v", bpq.startIndex, bpq.endIndex, bpq.entries)
 }
 
-func makeRingBuffer(capacity int) *bpqRingBuffer {
+func makeRingBuffer(capacity int, queueType QueueType) *bpqRingBuffer {
+  var fn func(int64, int64) bool
+  if queueType == MAX_QUEUE {
+    fn = func(a int64, b int64) bool {
+      return a > b
+    }
+  } else {
+    fn = func(a int64, b int64) bool {
+      return a < b
+    }
+  }
+
   result := bpqRingBuffer{make([]ringBufferEntry, capacity),
-    0, 0}
+    0, 0, fn}
 
   for i := 0; i < capacity; i++ {
     result.entries[i] = ringBufferEntry{nil, 0, false}
@@ -45,7 +57,7 @@ func (bpq *bpqRingBuffer) Capacity() int {
 func (bpq *bpqRingBuffer) Push(item interface{}, priority int64) bool {
   //defer fmt.Printf("Post-Push: %v", bpq)
 
-  if bpq.entries[bpq.endIndex].inUse && bpq.entries[bpq.endIndex].priority < priority {
+  if bpq.entries[bpq.endIndex].inUse && bpq.compareFunc(bpq.entries[bpq.endIndex].priority, priority) {
     // We can't insert
     return false
   }
@@ -69,7 +81,7 @@ func (bpq *bpqRingBuffer) Push(item interface{}, priority int64) bool {
       prevIndex = index - 1
     }
 
-    if bpq.entries[index].priority < bpq.entries[prevIndex].priority {
+    if bpq.compareFunc(bpq.entries[index].priority, bpq.entries[prevIndex].priority) {
       bpq.entries[prevIndex], bpq.entries[index] = bpq.entries[index], bpq.entries[prevIndex]
 
       index = prevIndex
