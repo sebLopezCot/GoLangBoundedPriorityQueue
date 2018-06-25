@@ -1,10 +1,10 @@
 package bpq
 
 import (
-  "testing"
   "fmt"
   "math/rand"
   "sort"
+  "testing"
 )
 
 func TestCapacity(t *testing.T) {
@@ -32,7 +32,7 @@ func TestEmptyPopWithRingBuffer(t *testing.T) {
 }
 
 func TestEmptyPopWithBoundedHeap(t *testing.T) {
-  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize + 1), t)
+  testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize+1), t)
 }
 
 func testEmptyPopWithBPQ(queue BPQ, t *testing.T) {
@@ -54,7 +54,7 @@ func TestSimplePushPopWithRingBuffer(t *testing.T) {
 }
 
 func TestSimplePushPopWithBoundedHeap(t *testing.T) {
-  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize + 1), t)
+  testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
 }
 
 func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
@@ -72,7 +72,7 @@ func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
   c, suc := v.(int)
 
   if !suc || c != 1 {
-    t.Error("Expected integer value 1 in reply")
+    t.Error(fmt.Sprintf("Expected integer value 1 in reply but got %v", c))
   }
 }
 
@@ -83,7 +83,7 @@ func TestPushDoublePopWithRingBuffer(t *testing.T) {
 }
 
 func TestPushDoublePopWithBoundedHeap(t *testing.T) {
-  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize + 1), t)
+  testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
 }
 
 func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
@@ -106,26 +106,27 @@ func TestPriorityOrderingWithRingBuffer(t *testing.T) {
 }
 
 func TestPriorityOrderingWithBoundedHeap(t *testing.T) {
-  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize + 1), t)
+  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1), t)
 }
 
 func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
+  queue.Push(0, 50000000000)
   queue.Push(1, 10)
   queue.Push(2, 5)
   queue.Push(3, 100)
   v1, _ := queue.Pop()
   v2, _ := queue.Pop()
   v3, _ := queue.Pop()
-
+  v4, _ := queue.Pop()
 
   if (v1 == nil || v1.(int) != 2) ||
-     (v2 == nil || v2.(int) != 1) ||
-     (v3 == nil || v3.(int) != 3) {
-    result := fmt.Sprintf("%v, %v, %v\n", v1, v2, v3)
+    (v2 == nil || v2.(int) != 1) ||
+    (v3 == nil || v3.(int) != 3) ||
+    (v4 == nil || v4.(int) != 0) {
+    result := fmt.Sprintf("%v, %v, %v, %v\n", v1, v2, v3, v4)
     t.Error("Unexpected priority ordering, got " + result)
   }
 }
-
 
 // Test for over-fill
 // Overfill tests currently only test the ring buffer
@@ -157,23 +158,21 @@ func TestOverFill(t *testing.T) {
   }
 
   if (v1 == nil || v1.(int) != 8) ||
-     (v2 == nil || v2.(int) != 7) ||
-     (v3 == nil || v3.(int) != 1) ||
-     (v4 == nil || v4.(int) != 2) ||
-     (v4 == nil || v5.(int) != 3) {
+    (v2 == nil || v2.(int) != 7) ||
+    (v3 == nil || v3.(int) != 1) ||
+    (v4 == nil || v5.(int) != 3) {
     t.Errorf("Incorrect priority ordering, got %v, %v, %v, %v, %v",
-             v1, v2, v3, v4, v5)
+      v1, v2, v3, v4, v5)
   }
 }
-
 
 //
 // Psuedo-random tests (with fixed seed)
 //
 
 type Entry struct {
-  value int
-  priority int
+  value    int
+  priority int64
 }
 
 type Entries []Entry
@@ -190,8 +189,8 @@ func (es Entries) Less(i, j int) bool {
   return es[i].priority < es[j].priority
 }
 
-func (es Entries) ContainsPriority(priority int) bool {
-  for _, v := range(es) {
+func (es Entries) ContainsPriority(priority int64) bool {
+  for _, v := range es {
     if v.priority == priority {
       return true
     }
@@ -201,13 +200,13 @@ func (es Entries) ContainsPriority(priority int) bool {
 }
 
 func TestRandomInsertAndPopWithRingBuffer(t *testing.T) {
-  testRandomInsertAndPopWithQueue(BPQWithCapacity(maxRingBufferSize), 
-                                  maxRingBufferSize, t)
+  testRandomInsertAndPopWithQueue(BPQWithCapacity(maxRingBufferSize),
+    maxRingBufferSize, t)
 }
 
 func TestRandomInsertAndPopWithBoundedHeap(t *testing.T) {
-  testRandomInsertAndPopWithQueue(BPQWithCapacity(100 * maxRingBufferSize),
-                                  100 * maxRingBufferSize, t)
+  testRandomInsertAndPopWithQueue(BPQWithCapacity(100*maxRingBufferSize),
+    100*maxRingBufferSize, t)
 }
 
 func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
@@ -215,16 +214,16 @@ func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
   rand.Seed(123456)
 
   // Generate a random list of entries and priorities
-  
+
   randomItems := make(Entries, max)
   for i := 0; i < max; i++ {
-    var item Entry = Entry{ rand.Int(), rand.Int() }
+    var item Entry = Entry{rand.Int(), rand.Int63()}
 
     // We need to ensure each item has a distinct priority; our priority sort is
     // not stable in any sense
     for {
       if randomItems.ContainsPriority(item.priority) {
-        item = Entry{ rand.Int() % 100, rand.Int() % 100 }
+        item = Entry{rand.Int() % 100, rand.Int63() % 100}
       } else {
         break
       }
@@ -236,12 +235,12 @@ func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
 
   sort.Sort(randomItems)
 
-  for _, entry := range(randomItems) {
+  for _, entry := range randomItems {
     v, _ := queue.Pop()
 
     if entry.value != v.(int) {
-      t.Errorf("Not the right value, got %v but wanted %v", v.(int), 
-               entry.value)
+      t.Errorf("Not the right value, got %v but wanted %v", v.(int),
+        entry.value)
     }
   }
 }
@@ -255,7 +254,7 @@ func BenchmarkBPQRingBuffer(b *testing.B) {
 }
 
 func BenchmarkBPQBoundedHeap(b *testing.B) {
-  benchmarkBPQ(BPQWithCapacity(100 * maxRingBufferSize), b)
+  benchmarkBPQ(BPQWithCapacity(100*maxRingBufferSize), b)
 }
 
 func benchmarkBPQ(queue BPQ, b *testing.B) {
@@ -263,7 +262,7 @@ func benchmarkBPQ(queue BPQ, b *testing.B) {
 
   for n := 0; n < b.N; n++ {
     for i := 0; i < max; i++ {
-      queue.Push(i, i % 10)
+      queue.Push(i, int64(i%10))
     }
 
     for i := 0; i < max; i++ {

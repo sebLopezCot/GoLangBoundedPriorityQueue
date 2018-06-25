@@ -6,15 +6,15 @@ import (
 )
 
 type entry struct {
-  item interface{}
-  priority int
-  inUse bool
+  item     interface{}
+  priority int64
+  inUse    bool
 }
 
 type bpqBoundedHeapImpl struct {
- entries []entry
- nextSlot int
- highestPriorityIndex int
+  entries              []entry
+  nextSlot             int
+  highestPriorityIndex int
 }
 
 func (bpq bpqBoundedHeapImpl) String() string {
@@ -26,10 +26,10 @@ func (e entry) String() string {
 }
 
 func makeBoundedHeap(capacity int) *bpqBoundedHeapImpl {
-  result := bpqBoundedHeapImpl{ make([]entry, capacity), 0, 0 }
+  result := bpqBoundedHeapImpl{make([]entry, capacity), 0, 0}
 
   for i := 0; i < capacity; i++ {
-    result.entries[i] = entry{ nil, 0, false }
+    result.entries[i] = entry{nil, 0, false}
   }
 
   return &result
@@ -39,10 +39,10 @@ func (bpq *bpqBoundedHeapImpl) Capacity() int {
   return len(bpq.entries)
 }
 
-func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int) bool {
-  if (bpq.Capacity() == bpq.nextSlot) {
+func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
+  if bpq.Capacity() == bpq.nextSlot {
     // We're full!
-    if (priority < bpq.entries[bpq.highestPriorityIndex].priority) {
+    if priority < bpq.entries[bpq.highestPriorityIndex].priority {
       // But we can knock the back entry off
       bpq.entries[bpq.highestPriorityIndex].item = item
       bpq.entries[bpq.highestPriorityIndex].priority = priority
@@ -53,16 +53,16 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int) bool {
       // We must now restore the highest priority index. Alas, this is an O(n)
       // operation, but it only triggers when insertion is successful
       // and the heap is full
-      highestPriority := math.MinInt64
+      highestPriority := int64(math.MinInt64)
       highestIndex := 0
-      for i, v := range(bpq.entries) {
+      for i, v := range bpq.entries {
         if v.priority >= highestPriority {
           highestIndex = i
           highestPriority = v.priority
         }
       }
       bpq.highestPriorityIndex = highestIndex
-      
+
       return true
     } else {
       return false
@@ -76,7 +76,7 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int) bool {
     // If we're highest than the highest, we become the highest
     // We've guarnteed to not bubble up in such cases
     if priority > bpq.entries[bpq.highestPriorityIndex].priority {
-      bpq.highestPriorityIndex = bpq.nextSlot;
+      bpq.highestPriorityIndex = bpq.nextSlot
     } else {
       bpq.bubbleUpIndex(bpq.nextSlot)
     }
@@ -94,13 +94,13 @@ func (bpq *bpqBoundedHeapImpl) Pop() (interface{}, error) {
     return nil, NoElementsError
   }
 
-  result := bpq.entries[0];
+  result := bpq.entries[0]
 
   // Are we moving the highest priority index
-  poppingHighest := bpq.nextSlot - 1 == bpq.highestPriorityIndex
+  poppingHighest := bpq.nextSlot-1 == bpq.highestPriorityIndex
 
-  bpq.entries[0] = bpq.entries[bpq.nextSlot - 1]
-  bpq.entries[bpq.nextSlot - 1].inUse = false
+  bpq.entries[0] = bpq.entries[bpq.nextSlot-1]
+  bpq.entries[bpq.nextSlot-1].inUse = false
   bpq.nextSlot = bpq.nextSlot - 1
 
   if bpq.entries[0].inUse {
@@ -120,23 +120,23 @@ func (bpq *bpqBoundedHeapImpl) bubbleDownIndex(index int) int {
   lChild, rChild := childrenOfIndex(index)
 
   if lChild < bpq.nextSlot && rChild < bpq.nextSlot {
-     if bpq.entries[lChild].priority < bpq.entries[rChild].priority {
-       if bpq.entries[lChild].priority < bpq.entries[index].priority {
-         bpq.swapIndices(lChild, index)
-         return bpq.bubbleDownIndex(lChild)
-       }
-     } else {
-       if bpq.entries[rChild].priority < bpq.entries[index].priority {
-         bpq.swapIndices(rChild, index)
-         return bpq.bubbleDownIndex(rChild)
-       }
-     }
+    if bpq.entries[lChild].priority < bpq.entries[rChild].priority {
+      if bpq.entries[lChild].priority < bpq.entries[index].priority {
+        bpq.swapIndices(lChild, index)
+        return bpq.bubbleDownIndex(lChild)
+      }
+    } else {
+      if bpq.entries[rChild].priority < bpq.entries[index].priority {
+        bpq.swapIndices(rChild, index)
+        return bpq.bubbleDownIndex(rChild)
+      }
+    }
   } else if lChild < bpq.nextSlot && bpq.entries[lChild].priority < bpq.entries[index].priority {
-     bpq.swapIndices(lChild, index)
-     return bpq.bubbleDownIndex(lChild)
+    bpq.swapIndices(lChild, index)
+    return bpq.bubbleDownIndex(lChild)
   } else if rChild < bpq.nextSlot && bpq.entries[rChild].priority < bpq.entries[index].priority {
-     bpq.swapIndices(rChild, index)
-     return bpq.bubbleDownIndex(rChild)
+    bpq.swapIndices(rChild, index)
+    return bpq.bubbleDownIndex(rChild)
   }
 
   return index
@@ -152,7 +152,7 @@ func (bpq *bpqBoundedHeapImpl) bubbleUpIndex(index int) {
 }
 
 func (bpq *bpqBoundedHeapImpl) swapIndices(left, right int) {
-   bpq.entries[left], bpq.entries[right] = bpq.entries[right], bpq.entries[left]
+  bpq.entries[left], bpq.entries[right] = bpq.entries[right], bpq.entries[left]
 }
 
 func parentOfIndex(index int) int {

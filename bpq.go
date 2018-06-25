@@ -11,7 +11,7 @@ type BPQ interface {
   // Push attempts to enqueue an item to the queue, with the given priority
   // Returns whether it succeded or not (failure is only due to a full queue,
   // where all items are lower priority)
-  Push(interface{}, int) bool
+  Push(interface{}, int64) bool
   // Pop attempts to pop an item from the queue. It returns the popped item,
   // or an error. The only error it returns is NoElementsError, indicating
   // that the queue is empty

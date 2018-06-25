@@ -5,21 +5,21 @@ import (
 )
 
 type ringBufferEntry struct {
-  value interface{}
-  priority int
-  inUse bool
+  value    interface{}
+  priority int64
+  inUse    bool
 }
 
 type bpqRingBuffer struct {
-  entries []ringBufferEntry
+  entries              []ringBufferEntry
   startIndex, endIndex int
-} 
+}
 
 func (e ringBufferEntry) String() string {
   if e.inUse {
-    return fmt.Sprintf("{ Value %v, Priority %v }", e.value, e.priority, e.inUse)
+    return fmt.Sprintf("{ Value %v, Priority %v }", e.value, e.priority)
   } else {
-    return fmt.Sprintf("{}", e.value, e.priority, e.inUse)
+    return fmt.Sprintf("{}")
   }
 }
 
@@ -28,11 +28,11 @@ func (bpq bpqRingBuffer) String() string {
 }
 
 func makeRingBuffer(capacity int) *bpqRingBuffer {
-  result := bpqRingBuffer{ make([]ringBufferEntry, capacity),
-                           0, 0 }
+  result := bpqRingBuffer{make([]ringBufferEntry, capacity),
+    0, 0}
 
   for i := 0; i < capacity; i++ {
-    result.entries[i] = ringBufferEntry{ nil, 0, false }
+    result.entries[i] = ringBufferEntry{nil, 0, false}
   }
 
   return &result
@@ -42,7 +42,7 @@ func (bpq *bpqRingBuffer) Capacity() int {
   return len(bpq.entries)
 }
 
-func (bpq *bpqRingBuffer) Push(item interface{}, priority int) bool {
+func (bpq *bpqRingBuffer) Push(item interface{}, priority int64) bool {
   //defer fmt.Printf("Post-Push: %v", bpq)
 
   if bpq.entries[bpq.endIndex].inUse && bpq.entries[bpq.endIndex].priority < priority {
@@ -61,7 +61,7 @@ func (bpq *bpqRingBuffer) Push(item interface{}, priority int) bool {
   }
 
   // Pull it backwards until it's at the right place
-  for ; index != bpq.startIndex && bpq.entries[index].inUse ; {
+  for index != bpq.startIndex && bpq.entries[index].inUse {
     var prevIndex int
     if index == 0 {
       prevIndex = len(bpq.entries) - 1
