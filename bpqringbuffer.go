@@ -14,6 +14,7 @@ type bpqRingBuffer struct {
   entries              []ringBufferEntry
   startIndex, endIndex int
   compareFunc          func(int64, int64) bool
+  queueType            QueueType
 }
 
 func (e ringBufferEntry) String() string {
@@ -41,7 +42,7 @@ func makeRingBuffer(capacity int, queueType QueueType) *bpqRingBuffer {
   }
 
   result := bpqRingBuffer{make([]ringBufferEntry, capacity),
-    0, 0, fn}
+    0, 0, fn, queueType}
 
   for i := 0; i < capacity; i++ {
     result.entries[i] = ringBufferEntry{nil, 0, false}
@@ -52,6 +53,10 @@ func makeRingBuffer(capacity int, queueType QueueType) *bpqRingBuffer {
 
 func (bpq *bpqRingBuffer) Capacity() int {
   return len(bpq.entries)
+}
+
+func (bpq *bpqRingBuffer) QueueType() QueueType {
+  return bpq.queueType
 }
 
 func (bpq *bpqRingBuffer) Push(item interface{}, priority int64) bool {

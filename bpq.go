@@ -32,6 +32,8 @@ type BPQ interface {
   // or an error. The only error it returns is NoElementsError, indicating
   // that the queue is empty
   Pop() (interface{}, error)
+  // QueueType returns the type of the underlying queue
+  QueueType() QueueType
 }
 
 // NoElementsError indicates that a Pop was attempted on an empty queue

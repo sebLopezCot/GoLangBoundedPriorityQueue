@@ -16,6 +16,7 @@ type bpqBoundedHeapImpl struct {
   nextSlot             int
   highestPriorityIndex int
   compareFunc          func(int64, int64) bool
+  queueType            QueueType
 }
 
 func (bpq bpqBoundedHeapImpl) String() string {
@@ -39,7 +40,7 @@ func makeBoundedHeap(capacity int, queueType QueueType) *bpqBoundedHeapImpl {
     }
   }
 
-  result := bpqBoundedHeapImpl{make([]entry, capacity), 0, 0, fn}
+  result := bpqBoundedHeapImpl{make([]entry, capacity), 0, 0, fn, queueType}
 
   for i := 0; i < capacity; i++ {
     result.entries[i] = entry{nil, 0, false}
@@ -50,6 +51,10 @@ func makeBoundedHeap(capacity int, queueType QueueType) *bpqBoundedHeapImpl {
 
 func (bpq *bpqBoundedHeapImpl) Capacity() int {
   return len(bpq.entries)
+}
+
+func (bpq *bpqBoundedHeapImpl) QueueType() QueueType {
+  return bpq.queueType
 }
 
 func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {

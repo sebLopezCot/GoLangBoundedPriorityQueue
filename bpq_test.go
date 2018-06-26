@@ -101,51 +101,44 @@ func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
 
 // Test for priority ordering
 
-func TestPriorityOrderingWithRingBuffer(t *testing.T) {
-  testMinPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
-  testMaxPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MAX_QUEUE), t)
+func TestMinPriorityOrderingWithRingBuffer(t *testing.T) {
+  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MIN_QUEUE), t)
 }
 
-func TestPriorityOrderingWithBoundedHeap(t *testing.T) {
-  testMinPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
-  testMaxPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MAX_QUEUE), t)
+func TestMaxPriorityOrderingWithRingBuffer(t *testing.T) {
+  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize, MAX_QUEUE), t)
 }
 
-func testMinPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
-  queue.Push(0, 50000000000)
-  queue.Push(1, 10)
-  queue.Push(2, 5)
-  queue.Push(3, 100)
-  v1, _ := queue.Pop()
-  v2, _ := queue.Pop()
-  v3, _ := queue.Pop()
-  v4, _ := queue.Pop()
+func TestMinPriorityOrderingWithBoundedHeap(t *testing.T) {
+  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1, MIN_QUEUE), t)
+}
 
-  if (v1 == nil || v1.(int) != 2) ||
-    (v2 == nil || v2.(int) != 1) ||
-    (v3 == nil || v3.(int) != 3) ||
-    (v4 == nil || v4.(int) != 0) {
-    result := fmt.Sprintf("%v, %v, %v, %v\n", v1, v2, v3, v4)
-    t.Error("Unexpected priority ordering, got " + result)
+func TestMaxPriorityOrderingWithBoundedHeap(t *testing.T) {
+  testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1, MAX_QUEUE), t)
+}
+
+func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
+  cap := queue.Capacity()
+  for i := 0; i < cap; i++ {
+    if queue.QueueType() == MAX_QUEUE {
+      queue.Push(i, int64(i))
+    } else {
+      queue.Push(i, int64(cap-1-i))
+    }
   }
-}
 
-func testMaxPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
-  queue.Push(0, 50000000000)
-  queue.Push(1, 10)
-  queue.Push(2, 5)
-  queue.Push(3, 100)
-  v1, _ := queue.Pop()
-  v2, _ := queue.Pop()
-  v3, _ := queue.Pop()
-  v4, _ := queue.Pop()
+  badOrder := false
+  for i := 0; i < cap; i++ {
+    expectedVal := cap - 1 - i
+    v, _ := queue.Pop()
+    if v != expectedVal {
+      badOrder = true
+      fmt.Printf("Item %v = %v, but expected %v\n", i, v, expectedVal)
+    }
+  }
 
-  if (v1 == nil || v1.(int) != 0) ||
-    (v2 == nil || v2.(int) != 3) ||
-    (v3 == nil || v3.(int) != 1) ||
-    (v4 == nil || v4.(int) != 2) {
-    result := fmt.Sprintf("%v, %v, %v, %v\n", v1, v2, v3, v4)
-    t.Error("Unexpected priority ordering, got " + result)
+  if badOrder {
+    t.Errorf("Unexpected ordering for %v", queue.QueueType())
   }
 }
 
