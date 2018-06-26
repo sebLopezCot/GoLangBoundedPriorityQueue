@@ -93,7 +93,7 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
 
     // If we're highest than the highest, we become the highest
     // We've guarnteed to not bubble up in such cases
-    if priority > bpq.entries[bpq.highestPriorityIndex].priority {
+    if bpq.compareFunc(bpq.entries[bpq.highestPriorityIndex].priority, priority) {
       bpq.highestPriorityIndex = bpq.nextSlot
     } else {
       bpq.bubbleUpIndex(bpq.nextSlot)
@@ -163,7 +163,7 @@ func (bpq *bpqBoundedHeapImpl) bubbleDownIndex(index int) int {
 func (bpq *bpqBoundedHeapImpl) bubbleUpIndex(index int) {
   parent := parentOfIndex(index)
 
-  if bpq.entries[parent].priority > bpq.entries[index].priority {
+  if bpq.compareFunc(bpq.entries[index].priority, bpq.entries[parent].priority) {
     bpq.swapIndices(index, parent)
     bpq.bubbleUpIndex(parent)
   }
