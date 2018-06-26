@@ -6,14 +6,14 @@ import (
 
 type ringBufferEntry struct {
   value    interface{}
-  priority int64
+  priority float64
   inUse    bool
 }
 
 type bpqRingBuffer struct {
   entries              []ringBufferEntry
   startIndex, endIndex int
-  compareFunc          func(int64, int64) bool
+  compareFunc          func(float64, float64) bool
   queueType            QueueType
 }
 
@@ -30,13 +30,13 @@ func (bpq bpqRingBuffer) String() string {
 }
 
 func makeRingBuffer(capacity int, queueType QueueType) *bpqRingBuffer {
-  var fn func(int64, int64) bool
+  var fn func(float64, float64) bool
   if queueType == MaxQueue {
-    fn = func(a int64, b int64) bool {
+    fn = func(a float64, b float64) bool {
       return a > b
     }
   } else {
-    fn = func(a int64, b int64) bool {
+    fn = func(a float64, b float64) bool {
       return a < b
     }
   }
@@ -59,7 +59,7 @@ func (bpq *bpqRingBuffer) QueueType() QueueType {
   return bpq.queueType
 }
 
-func (bpq *bpqRingBuffer) Push(item interface{}, priority int64) bool {
+func (bpq *bpqRingBuffer) Push(item interface{}, priority float64) bool {
   //defer fmt.Printf("Post-Push: %v", bpq)
 
   if bpq.entries[bpq.endIndex].inUse && bpq.compareFunc(bpq.entries[bpq.endIndex].priority, priority) {

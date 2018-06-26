@@ -7,7 +7,7 @@ import (
 
 type entry struct {
   item     interface{}
-  priority int64
+  priority float64
   inUse    bool
 }
 
@@ -15,7 +15,7 @@ type bpqBoundedHeapImpl struct {
   entries              []entry
   nextSlot             int
   highestPriorityIndex int
-  compareFunc          func(int64, int64) bool
+  compareFunc          func(float64, float64) bool
   queueType            QueueType
 }
 
@@ -29,13 +29,13 @@ func (e entry) String() string {
 
 func makeBoundedHeap(capacity int, queueType QueueType) *bpqBoundedHeapImpl {
 
-  var fn func(int64, int64) bool
+  var fn func(float64, float64) bool
   if queueType == MaxQueue {
-    fn = func(a int64, b int64) bool {
+    fn = func(a float64, b float64) bool {
       return a > b
     }
   } else {
-    fn = func(a int64, b int64) bool {
+    fn = func(a float64, b float64) bool {
       return a < b
     }
   }
@@ -57,7 +57,7 @@ func (bpq *bpqBoundedHeapImpl) QueueType() QueueType {
   return bpq.queueType
 }
 
-func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
+func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority float64) bool {
   if bpq.Capacity() == bpq.nextSlot {
     // We're full!
     if bpq.compareFunc(priority, bpq.entries[bpq.highestPriorityIndex].priority) {
@@ -71,7 +71,7 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority int64) bool {
       // We must now restore the highest priority index. Alas, this is an O(n)
       // operation, but it only triggers when insertion is successful
       // and the heap is full
-      highestPriority := int64(math.MinInt64)
+      highestPriority := float64(math.MinInt64)
       highestIndex := 0
       for i, v := range bpq.entries {
         if bpq.compareFunc(highestPriority, v.priority) {

@@ -17,7 +17,7 @@ To use:
 
     bpq.BPQWithCapacity(maxCapacity, queueType)
 
-    var didEnqueue bool = bpq.Push(AnyThing, AnInt64Priority)
+    var didEnqueue bool = bpq.Push(AnyThing, AFloat64Priority)
     ...
     var value, err = bpq.Pop()
 

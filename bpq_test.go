@@ -121,9 +121,9 @@ func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
   cap := queue.Capacity()
   for i := 0; i < cap; i++ {
     if queue.QueueType() == MaxQueue {
-      queue.Push(i, int64(i))
+      queue.Push(i, float64(i))
     } else {
-      queue.Push(i, int64(cap-1-i))
+      queue.Push(i, float64(cap-1-i))
     }
   }
 
@@ -186,7 +186,7 @@ func TestOverFill(t *testing.T) {
 
 type Entry struct {
   value    int
-  priority int64
+  priority float64
 }
 
 type Entries []Entry
@@ -203,7 +203,7 @@ func (es Entries) Less(i, j int) bool {
   return es[i].priority < es[j].priority
 }
 
-func (es Entries) ContainsPriority(priority int64) bool {
+func (es Entries) ContainsPriority(priority float64) bool {
   for _, v := range es {
     if v.priority == priority {
       return true
@@ -231,13 +231,13 @@ func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
 
   randomItems := make(Entries, max)
   for i := 0; i < max; i++ {
-    var item Entry = Entry{rand.Int(), rand.Int63()}
+    var item Entry = Entry{rand.Int(), float64(rand.Int63())}
 
     // We need to ensure each item has a distinct priority; our priority sort is
     // not stable in any sense
     for {
       if randomItems.ContainsPriority(item.priority) {
-        item = Entry{rand.Int() % 100, rand.Int63() % 100}
+        item = Entry{rand.Int() % 100, float64(rand.Int63() % 100)}
       } else {
         break
       }
@@ -276,7 +276,7 @@ func benchmarkBPQ(queue BPQ, b *testing.B) {
 
   for n := 0; n < b.N; n++ {
     for i := 0; i < max; i++ {
-      queue.Push(i, int64(i%10))
+      queue.Push(i, float64(i%10))
     }
 
     for i := 0; i < max; i++ {
