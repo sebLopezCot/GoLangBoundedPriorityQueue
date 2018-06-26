@@ -13,7 +13,7 @@ To use:
 
     import "bpq"
 
-    // Queue type can be either MIN_QUEUE or MAX_QUEUE
+    // Queue type can be either MinQueue or MaxQueue 
 
     bpq.BPQWithCapacity(maxCapacity, queueType)
 

@@ -31,7 +31,7 @@ func (bpq bpqRingBuffer) String() string {
 
 func makeRingBuffer(capacity int, queueType QueueType) *bpqRingBuffer {
   var fn func(int64, int64) bool
-  if queueType == MAX_QUEUE {
+  if queueType == MaxQueue {
     fn = func(a int64, b int64) bool {
       return a > b
     }

@@ -7,13 +7,13 @@ import (
 type QueueType int
 
 const (
-  MIN_QUEUE QueueType = 1 + iota
-  MAX_QUEUE
+  MinQueue QueueType = 1 + iota
+  MaxQueue
 )
 
 var queueTypes = [...]string{
-  "MIN_QUEUE",
-  "MAX_QUEUE",
+  "MinQueue",
+  "MaxQueue",
 }
 
 func (queueType QueueType) String() string {

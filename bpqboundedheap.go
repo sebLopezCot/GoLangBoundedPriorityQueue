@@ -30,7 +30,7 @@ func (e entry) String() string {
 func makeBoundedHeap(capacity int, queueType QueueType) *bpqBoundedHeapImpl {
 
   var fn func(int64, int64) bool
-  if queueType == MAX_QUEUE {
+  if queueType == MaxQueue {
     fn = func(a int64, b int64) bool {
       return a > b
     }
