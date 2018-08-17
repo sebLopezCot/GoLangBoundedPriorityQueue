@@ -131,3 +131,16 @@ func (bpq *bpqRingBuffer) MarshalJSON() ([]byte, error) {
 
   return json.Marshal(buffer)
 }
+
+func (bpq *bpqRingBuffer) UnmarshalJSON(data []byte) error {
+  var buffer []QueueItem
+  if err := json.Unmarshal(data, &buffer); err != nil {
+    return err
+  }
+
+  for _, item := range buffer {
+    bpq.Push(item.Value, item.Priority)
+  }
+
+  return nil
+}

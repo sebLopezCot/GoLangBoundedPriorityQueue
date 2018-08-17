@@ -152,6 +152,19 @@ func (bpq *bpqBoundedHeapImpl) MarshalJSON() ([]byte, error) {
   return json.Marshal(buffer)
 }
 
+func (bpq *bpqBoundedHeapImpl) UnmarshalJSON(data []byte) error {
+  var buffer []QueueItem
+  if err := json.Unmarshal(data, &buffer); err != nil {
+    return err
+  }
+
+  for _, item := range buffer {
+    bpq.Push(item.Value, item.Priority)
+  }
+
+  return nil
+}
+
 func (bpq *bpqBoundedHeapImpl) bubbleDownIndex(index int) int {
   // If we're greater than either of our children, swap with the child
   // and bubble down from their
