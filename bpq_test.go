@@ -36,7 +36,8 @@ func TestEmptyPopWithBoundedHeap(t *testing.T) {
 }
 
 func testEmptyPopWithBPQ(queue BPQ, t *testing.T) {
-  v, err := queue.Pop()
+  r, err := queue.Pop()
+  v := r.Value
 
   if v != nil {
     t.Error("Expected an nil value when popping an empty queue")
@@ -59,11 +60,13 @@ func TestSimplePushPopWithBoundedHeap(t *testing.T) {
 
 func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
   queue.Push(1, 10)
-  v, err := queue.Pop()
+  r, err := queue.Pop()
 
   if err != nil {
     t.Error("Unexpected error value when popping a non-empty queue")
   }
+
+  v := r.Value
 
   if v == nil {
     t.Error("Recieved an unexpected empty value")
@@ -89,10 +92,12 @@ func TestPushDoublePopWithBoundedHeap(t *testing.T) {
 func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
   queue.Push(1, 10)
   queue.Pop()
-  v, err := queue.Pop()
+  r, err := queue.Pop()
   if err == nil {
     t.Error("Expected error value when popping an empty queue")
   }
+
+  v := r.Value
 
   if v != nil {
     t.Error("Did not expect a value when popping an empty queue")
@@ -130,7 +135,8 @@ func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
   badOrder := false
   for i := 0; i < cap; i++ {
     expectedVal := cap - 1 - i
-    v, _ := queue.Pop()
+    r, _ := queue.Pop()
+    v := r.Value
     if v != expectedVal {
       badOrder = true
       fmt.Printf("Item %v = %v, but expected %v\n", i, v, expectedVal)
@@ -159,12 +165,18 @@ func TestOverFill(t *testing.T) {
   queue.Push(9, 50)
   queue.Push(10, 35)
 
-  v1, _ := queue.Pop()
-  v2, _ := queue.Pop()
-  v3, _ := queue.Pop()
-  v4, _ := queue.Pop()
-  v5, _ := queue.Pop()
-  v6, err := queue.Pop()
+  r1, _ := queue.Pop()
+  v1 := r1.Value
+  r2, _ := queue.Pop()
+  v2 := r2.Value
+  r3, _ := queue.Pop()
+  v3 := r3.Value
+  r4, _ := queue.Pop()
+  v4 := r4.Value
+  r5, _ := queue.Pop()
+  v5 := r5.Value
+  r6, err := queue.Pop()
+  v6 := r6.Value
 
   // We should not get a v6
   if v6 != nil || err == nil {
@@ -250,7 +262,8 @@ func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
   sort.Sort(randomItems)
 
   for _, entry := range randomItems {
-    v, _ := queue.Pop()
+    r, _ := queue.Pop()
+    v := r.Value
 
     if entry.value != v.(int) {
       t.Errorf("Not the right value, got %v but wanted %v", v.(int),

@@ -6,6 +6,11 @@ import (
 
 type QueueType int
 
+type QueueItem struct {
+  Value    interface{}
+  Priority float64
+}
+
 const (
   MinQueue QueueType = 1 + iota
   MaxQueue
@@ -31,7 +36,7 @@ type BPQ interface {
   // Pop attempts to pop an item from the queue. It returns the popped item,
   // or an error. The only error it returns is NoElementsError, indicating
   // that the queue is empty
-  Pop() (interface{}, error)
+  Pop() (QueueItem, error)
   // QueueType returns the type of the underlying queue
   QueueType() QueueType
 }

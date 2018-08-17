@@ -106,14 +106,14 @@ func (bpq *bpqBoundedHeapImpl) Push(item interface{}, priority float64) bool {
   }
 }
 
-func (bpq *bpqBoundedHeapImpl) Pop() (interface{}, error) {
+func (bpq *bpqBoundedHeapImpl) Pop() (QueueItem, error) {
   // defer fmt.Printf("Post-pop %v\n", bpq)
 
   if bpq.nextSlot == 0 {
-    return nil, NoElementsError
+    return QueueItem{}, NoElementsError
   }
 
-  result := bpq.entries[0]
+  resultEntry := bpq.entries[0]
 
   // Are we moving the highest priority index
   poppingHighest := bpq.nextSlot-1 == bpq.highestPriorityIndex
@@ -130,11 +130,16 @@ func (bpq *bpqBoundedHeapImpl) Pop() (interface{}, error) {
     }
   }
 
-  return result.item, nil
+  result := QueueItem{
+    Value:    resultEntry.item,
+    Priority: resultEntry.priority,
+  }
+
+  return result, nil
 }
 
 func (bpq *bpqBoundedHeapImpl) MarshalJSON() ([]byte, error) {
-  buffer := make([]interface{}, 0, 0)
+  buffer := make([]QueueItem, 0, 0)
   for {
     val, err := bpq.Pop()
     if err != nil {

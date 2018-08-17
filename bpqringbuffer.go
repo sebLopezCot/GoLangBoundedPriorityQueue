@@ -99,12 +99,15 @@ func (bpq *bpqRingBuffer) Push(item interface{}, priority float64) bool {
   return true
 }
 
-func (bpq *bpqRingBuffer) Pop() (interface{}, error) {
+func (bpq *bpqRingBuffer) Pop() (QueueItem, error) {
   if bpq.entries[bpq.startIndex].inUse == false {
-    return nil, NoElementsError
+    return QueueItem{}, NoElementsError
   }
 
-  result := bpq.entries[bpq.startIndex].value
+  result := QueueItem{
+    Value:    bpq.entries[bpq.startIndex].value,
+    Priority: bpq.entries[bpq.startIndex].priority,
+  }
   bpq.entries[bpq.startIndex].inUse = false
 
   bpq.startIndex = bpq.startIndex + 1
@@ -116,14 +119,14 @@ func (bpq *bpqRingBuffer) Pop() (interface{}, error) {
 }
 
 func (bpq *bpqRingBuffer) MarshalJSON() ([]byte, error) {
-  buffer := make([]interface{}, 0, 0)
+  buffer := make([]QueueItem, 0, 0)
   for {
-    val, err := bpq.Pop()
+    item, err := bpq.Pop()
     if err != nil {
       break
     }
 
-    buffer = append(buffer, val)
+    buffer = append(buffer, item)
   }
 
   return json.Marshal(buffer)
