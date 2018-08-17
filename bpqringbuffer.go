@@ -1,6 +1,7 @@
 package bpq
 
 import (
+  "encoding/json"
   "fmt"
 )
 
@@ -112,4 +113,18 @@ func (bpq *bpqRingBuffer) Pop() (interface{}, error) {
   }
 
   return result, nil
+}
+
+func (bpq *bpqRingBuffer) MarshalJSON() ([]byte, error) {
+  buffer := make([]interface{}, 0, 0)
+  for {
+    val, err := bpq.Pop()
+    if err != nil {
+      break
+    }
+
+    buffer = append(buffer, val)
+  }
+
+  return json.Marshal(buffer)
 }

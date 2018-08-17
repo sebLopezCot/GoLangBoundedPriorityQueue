@@ -1,6 +1,7 @@
 package bpq
 
 import (
+  "encoding/json"
   "fmt"
   "math"
 )
@@ -130,6 +131,20 @@ func (bpq *bpqBoundedHeapImpl) Pop() (interface{}, error) {
   }
 
   return result.item, nil
+}
+
+func (bpq *bpqBoundedHeapImpl) MarshalJSON() ([]byte, error) {
+  buffer := make([]interface{}, 0, 0)
+  for {
+    val, err := bpq.Pop()
+    if err != nil {
+      break
+    }
+
+    buffer = append(buffer, val)
+  }
+
+  return json.Marshal(buffer)
 }
 
 func (bpq *bpqBoundedHeapImpl) bubbleDownIndex(index int) int {
