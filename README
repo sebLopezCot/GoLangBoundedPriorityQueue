@@ -5,6 +5,7 @@ Modified by Sebastian Lopez-Cot (sebastian.lopez.cot@gmail.com)
 
 This library uses two backend implementations, depending on the size of the queue. For queues less than 128 elements, a contiguous ring buffer is used. This gives O(1) pop and O(n) push, but the simplicity and cache coherency of the implementation ensures it performs well (over 15 million operations per second in simple benchmarks).
 
+// DEPRECATED...
 For queues larger than 128 elements, a balanced binary heap is used. In most cases, this gives O(log n) Push and Pop. However, in the full heap case, when enqueuing an item that pushes another out of the queue, the performance degrades to O(n). Nonetheless, this is a lot faster than the linear implementation. Note that, for the heap case, the order of items with identical priorities is not maintained.
 
 Test and benchmarks are in bpq_test.go.
