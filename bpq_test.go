@@ -35,7 +35,7 @@ func TestEmptyPopWithBoundedHeap(t *testing.T) {
   testEmptyPopWithBPQ(BPQWithCapacity(maxRingBufferSize+1, MinQueue), t)
 }
 
-func testEmptyPopWithBPQ(queue BPQ, t *testing.T) {
+func testEmptyPopWithBPQ(queue *BPQ, t *testing.T) {
   r, err := queue.Pop()
   v := r.Value
 
@@ -58,7 +58,7 @@ func TestSimplePushPopWithBoundedHeap(t *testing.T) {
   testSimplePushPopWithQueue(BPQWithCapacity(maxRingBufferSize+1, MinQueue), t)
 }
 
-func testSimplePushPopWithQueue(queue BPQ, t *testing.T) {
+func testSimplePushPopWithQueue(queue *BPQ, t *testing.T) {
   queue.Push(1, 10)
   r, err := queue.Pop()
 
@@ -89,7 +89,7 @@ func TestPushDoublePopWithBoundedHeap(t *testing.T) {
   testPushDoublePopWithQueue(BPQWithCapacity(maxRingBufferSize+1, MinQueue), t)
 }
 
-func testPushDoublePopWithQueue(queue BPQ, t *testing.T) {
+func testPushDoublePopWithQueue(queue *BPQ, t *testing.T) {
   queue.Push(1, 10)
   queue.Pop()
   r, err := queue.Pop()
@@ -122,10 +122,10 @@ func TestMaxPriorityOrderingWithBoundedHeap(t *testing.T) {
   testPriorityOrderingWithQueue(BPQWithCapacity(maxRingBufferSize+1, MaxQueue), t)
 }
 
-func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
+func testPriorityOrderingWithQueue(queue *BPQ, t *testing.T) {
   cap := queue.Capacity()
   for i := 0; i < cap; i++ {
-    if queue.QueueType() == MaxQueue {
+    if queue.queueType == MaxQueue {
       queue.Push(i, float64(i))
     } else {
       queue.Push(i, float64(cap-1-i))
@@ -144,7 +144,7 @@ func testPriorityOrderingWithQueue(queue BPQ, t *testing.T) {
   }
 
   if badOrder {
-    t.Errorf("Unexpected ordering for %v", queue.QueueType())
+    t.Errorf("Unexpected ordering for %v", queue.queueType)
   }
 }
 
@@ -235,7 +235,7 @@ func TestRandomInsertAndPopWithBoundedHeap(t *testing.T) {
     100*maxRingBufferSize, t)
 }
 
-func testRandomInsertAndPopWithQueue(queue BPQ, max int, t *testing.T) {
+func testRandomInsertAndPopWithQueue(queue *BPQ, max int, t *testing.T) {
   // Use a determined seed for reproducability
   rand.Seed(123456)
 
@@ -284,7 +284,7 @@ func BenchmarkBPQBoundedHeap(b *testing.B) {
   benchmarkBPQ(BPQWithCapacity(100*maxRingBufferSize, MinQueue), b)
 }
 
-func benchmarkBPQ(queue BPQ, b *testing.B) {
+func benchmarkBPQ(queue *BPQ, b *testing.B) {
   var max = queue.Capacity()
 
   for n := 0; n < b.N; n++ {

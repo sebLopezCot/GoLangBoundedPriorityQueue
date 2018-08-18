@@ -56,7 +56,7 @@ var NoElementsError error = errors.New("NoElementsError")
 const maxRingBufferSize = 128
 
 // BPQWithCapacity creates a new bounded priority queue with the given capacity
-func BPQWithCapacity(capacity int, queueType QueueType) BPQ {
+func BPQWithCapacity(capacity int, queueType QueueType) *BPQ {
   return makeRingBuffer(capacity, queueType)
 }
 
@@ -81,11 +81,11 @@ func (e ringBufferEntry) String() string {
   }
 }
 
-func (bpq BPQ) String() string {
+func (bpq *BPQ) String() string {
   return fmt.Sprintf("BPQ Ring Buffer: Start %v, End %v, Entries: %v", bpq.startIndex, bpq.endIndex, bpq.entries)
 }
 
-func makeRingBuffer(capacity int, queueType QueueType) BPQ {
+func makeRingBuffer(capacity int, queueType QueueType) *BPQ {
   var fn func(float64, float64) bool
   if queueType == MaxQueue {
     fn = func(a float64, b float64) bool {
@@ -104,14 +104,14 @@ func makeRingBuffer(capacity int, queueType QueueType) BPQ {
     result.entries[i] = ringBufferEntry{nil, 0, false}
   }
 
-  return result
+  return &result
 }
 
-func (bpq BPQ) Capacity() int {
+func (bpq *BPQ) Capacity() int {
   return len(bpq.entries)
 }
 
-func (bpq BPQ) Push(item interface{}, priority float64) bool {
+func (bpq *BPQ) Push(item interface{}, priority float64) bool {
   //defer fmt.Printf("Post-Push: %v", bpq)
 
   if bpq.entries[bpq.endIndex].inUse && bpq.compareFunc(bpq.entries[bpq.endIndex].priority, priority) {
@@ -150,7 +150,7 @@ func (bpq BPQ) Push(item interface{}, priority float64) bool {
   return true
 }
 
-func (bpq BPQ) Pop() (QueueItem, error) {
+func (bpq *BPQ) Pop() (QueueItem, error) {
   if bpq.entries[bpq.startIndex].inUse == false {
     return QueueItem{}, NoElementsError
   }
@@ -169,7 +169,7 @@ func (bpq BPQ) Pop() (QueueItem, error) {
   return result, nil
 }
 
-func (bpq BPQ) MarshalJSON() ([]byte, error) {
+func (bpq *BPQ) MarshalJSON() ([]byte, error) {
   buffer := make([]QueueItem, 0, 0)
   for {
     item, err := bpq.Pop()
@@ -193,7 +193,7 @@ func (bpq *BPQ) UnmarshalJSON(data []byte) error {
     return err
   }
 
-  *bpq = BPQWithCapacity(buffer.Capacity, buffer.Ordering)
+  bpq = BPQWithCapacity(buffer.Capacity, buffer.Ordering)
 
   for _, item := range buffer.Items {
     bpq.Push(item.Value, item.Priority)
