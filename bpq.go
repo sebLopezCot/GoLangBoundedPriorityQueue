@@ -193,7 +193,7 @@ func (bpq *BPQ) UnmarshalJSON(data []byte) error {
     return err
   }
 
-  bpq = BPQWithCapacity(buffer.Capacity, buffer.Ordering)
+  *bpq = *BPQWithCapacity(buffer.Capacity, buffer.Ordering)
 
   for _, item := range buffer.Items {
     bpq.Push(item.Value, item.Priority)
